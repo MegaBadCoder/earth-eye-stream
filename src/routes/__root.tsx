@@ -2,6 +2,22 @@ import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/r
 
 import appCss from "../styles.css?url";
 
+const organizationJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "МТ-ЛАБ",
+  url: "https://id-preview--a52c278b-8112-484b-b996-d7eb9b42a3a9.lovable.app",
+  email: "info@mtlab.space",
+  telephone: "+7 (499) 649-49-99",
+  address: {
+    "@type": "PostalAddress",
+    streetAddress: "ул. Раевского, д. 4",
+    addressLocality: "Москва",
+    postalCode: "121151",
+    addressCountry: "RU",
+  },
+};
+
 function NotFoundComponent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -31,18 +47,40 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "МТ-ЛАБ — спутниковый мониторинг Земли" },
+      {
+        name: "description",
+        content:
+          "ПГО от МТ-ЛАБ — платформа геопространственной осведомлённости для государства, агрохолдингов, банков, лесопользователей и судоходных компаний.",
+      },
+      { name: "author", content: "МТ-ЛАБ" },
+      { property: "og:title", content: "МТ-ЛАБ — спутниковый мониторинг Земли" },
+      {
+        property: "og:description",
+        content:
+          "ПГО от МТ-ЛАБ: актуальные снимки, мониторинг, аналитика и API на базе собственных вычислительных мощностей.",
+      },
       { property: "og:type", content: "website" },
+      { property: "og:locale", content: "ru_RU" },
+      {
+        property: "og:url",
+        content: "https://id-preview--a52c278b-8112-484b-b996-d7eb9b42a3a9.lovable.app",
+      },
       { property: "og:image", content: "https://lovable.dev/opengraph-image-p98pqg.png" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "МТ-ЛАБ — спутниковый мониторинг Земли" },
+      {
+        name: "twitter:description",
+        content:
+          "ПГО от МТ-ЛАБ: геопространственная аналитика, мониторинг изменений и API для государства и бизнеса.",
+      },
       { name: "twitter:image", content: "https://lovable.dev/opengraph-image-p98pqg.png" },
     ],
     links: [
+      {
+        rel: "canonical",
+        href: "https://id-preview--a52c278b-8112-484b-b996-d7eb9b42a3a9.lovable.app",
+      },
       {
         rel: "stylesheet",
         href: appCss,
@@ -56,7 +94,7 @@ export const Route = createRootRoute({
 
 function RootShell({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="ru">
       <head>
         <HeadContent />
       </head>
@@ -69,5 +107,14 @@ function RootShell({ children }: { children: React.ReactNode }) {
 }
 
 function RootComponent() {
-  return <Outlet />;
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        suppressHydrationWarning
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+      />
+      <Outlet />
+    </>
+  );
 }
