@@ -66,7 +66,7 @@ export const Route = createRootRoute({
         property: "og:url",
         content: "https://id-preview--a52c278b-8112-484b-b996-d7eb9b42a3a9.lovable.app",
       },
-      { property: "og:image", content: "https://lovable.dev/opengraph-image-p98pqg.png" },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/fe8798cf-5e8b-4e70-96a0-8b6c41e56878/id-preview-0c868228--a52c278b-8112-484b-b996-d7eb9b42a3a9.lovable.app-1775056155586.png" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "МТ-ЛАБ — спутниковый мониторинг Земли" },
       {
@@ -74,7 +74,10 @@ export const Route = createRootRoute({
         content:
           "ПГО от МТ-ЛАБ: геопространственная аналитика, мониторинг изменений и API для государства и бизнеса.",
       },
-      { name: "twitter:image", content: "https://lovable.dev/opengraph-image-p98pqg.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/fe8798cf-5e8b-4e70-96a0-8b6c41e56878/id-preview-0c868228--a52c278b-8112-484b-b996-d7eb9b42a3a9.lovable.app-1775056155586.png" },
+      { name: "description", content: "Lovable Generated Project" },
+      { property: "og:description", content: "Lovable Generated Project" },
+      { name: "twitter:description", content: "Lovable Generated Project" },
     ],
     links: [
       {
