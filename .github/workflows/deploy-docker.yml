@@ -1,5 +1,13 @@
-# Секреты: DOCKER_REG_DOMAIN, DOCKER_REG_TOKEN, HOST_IP, HOST_USER, HOST_PASSWORD
-# Опционально: DOCKER_REG_USER — если не задан, для login используется github.actor (удобно для ghcr.io)
+# Timeweb Container Registry (пример):
+#   DOCKER_REG_DOMAIN = e27ca11f-inventive-grosbeak.registry.twcstorage.ru   (только хост, БЕЗ https://)
+#   DOCKER_REG_USER   = e27ca11f-inventive-grosbeak
+#   DOCKER_REG_TOKEN  = API-токен из панели Timeweb
+# GitHub Container Registry:
+#   DOCKER_REG_DOMAIN = ghcr.io
+#   DOCKER_REG_USER   — можно не задавать (будет github.actor)
+#   DOCKER_REG_TOKEN  = PAT с read:packages write:packages
+#
+# Образ: {host}/{user}/{имя-репо-на-github}:latest  (имя репо — последний сегмент, lower case)
 name: Deploy Docker
 
 on:
@@ -16,12 +24,36 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Image name (lowercase для ghcr.io)
-        id: meta
+      - name: Registry host (обрезка https:// — иначе таймаут к несуществующему URL)
+        id: reg
+        env:
+          RAW: ${{ secrets.DOCKER_REG_DOMAIN }}
         run: |
-          REG="${{ secrets.DOCKER_REG_DOMAIN }}"
-          REPO=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
-          echo "image=${REG}/${REPO}:latest" >> "$GITHUB_OUTPUT"
+          H="$RAW"
+          H="${H#https://}"
+          H="${H#http://}"
+          H="${H%%/*}"
+          H="${H%/}"
+          if [ -z "$H" ]; then
+            echo "::error::DOCKER_REG_DOMAIN пустой. Укажи только хост (например xxx.registry.twcstorage.ru или ghcr.io)"
+            exit 1
+          fi
+          echo "host=$H" >> "$GITHUB_OUTPUT"
+          echo "Using registry host: $H"
+
+      - name: Image name
+        id: meta
+        env:
+          REG_HOST: ${{ steps.reg.outputs.host }}
+          REG_USER_IN: ${{ secrets.DOCKER_REG_USER }}
+          GITHUB_ACTOR: ${{ github.actor }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          USER=$(echo "${REG_USER_IN:-$GITHUB_ACTOR}" | tr '[:upper:]' '[:lower:]')
+          SHORT=$(echo "$GITHUB_REPOSITORY" | cut -d/ -f2 | tr '[:upper:]' '[:lower:]')
+          IMG="${REG_HOST}/${USER}/${SHORT}:latest"
+          echo "image=$IMG" >> "$GITHUB_OUTPUT"
+          echo "Full image: $IMG"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -29,7 +61,7 @@ jobs:
       - name: Log in to registry
         uses: docker/login-action@v3
         with:
-          registry: ${{ secrets.DOCKER_REG_DOMAIN }}
+          registry: ${{ steps.reg.outputs.host }}
           username: ${{ secrets.DOCKER_REG_USER || github.actor }}
           password: ${{ secrets.DOCKER_REG_TOKEN }}
 
@@ -46,7 +78,7 @@ jobs:
         uses: appleboy/ssh-action@v1.2.2
         env:
           IMAGE: ${{ steps.meta.outputs.image }}
-          REG_DOMAIN: ${{ secrets.DOCKER_REG_DOMAIN }}
+          REG_HOST: ${{ steps.reg.outputs.host }}
           REG_TOKEN: ${{ secrets.DOCKER_REG_TOKEN }}
           REG_USER: ${{ secrets.DOCKER_REG_USER }}
           GITHUB_ACTOR: ${{ github.actor }}
@@ -54,11 +86,11 @@ jobs:
           host: ${{ secrets.HOST_IP }}
           username: ${{ secrets.HOST_USER }}
           password: ${{ secrets.HOST_PASSWORD }}
-          envs: IMAGE,REG_DOMAIN,REG_TOKEN,REG_USER,GITHUB_ACTOR
+          envs: IMAGE,REG_HOST,REG_TOKEN,REG_USER,GITHUB_ACTOR
           script: |
             set -e
-            USERNAME="${REG_USER:-$GITHUB_ACTOR}"
-            echo "$REG_TOKEN" | docker login "$REG_DOMAIN" -u "$USERNAME" --password-stdin
+            USERNAME=$(echo "${REG_USER:-$GITHUB_ACTOR}" | tr '[:upper:]' '[:lower:]')
+            echo "$REG_TOKEN" | docker login "$REG_HOST" -u "$USERNAME" --password-stdin
             docker pull "$IMAGE"
             docker stop mtlab-landing 2>/dev/null || true
             docker rm mtlab-landing 2>/dev/null || true
