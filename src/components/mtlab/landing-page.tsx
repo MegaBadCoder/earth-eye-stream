@@ -15,7 +15,6 @@ import {
   Plane,
   Radar,
   Satellite,
-  Ship,
   Sprout,
   Trees,
   Waves,
@@ -25,6 +24,7 @@ import { z } from "zod";
 
 import heroEarth from "@/assets/mtlab-hero-earth.jpg";
 import { RevealSection } from "@/components/mtlab/reveal-section";
+import { PgoPortalSection } from "@/components/mtlab/pgo-portal-section";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -137,28 +137,24 @@ const scenarios = [
     challenge: "контроль лесного фонда и пожарной обстановки на территории субъекта.",
     solution:
       "мониторинг пожаров и вырубок с оповещениями и периодическими отчётами. Данные на среднем и высоком разрешении, интеграция с профильными ГИС.",
-    icon: Building2,
   },
   {
     title: "Агрохолдинг или банк",
     challenge: "верификация сельхозземель при субсидировании или кредитовании.",
     solution:
       "карта фактического использования сельхозземель по всей России, сверка с кадастром, сезонный мониторинг состояния посевов.",
-    icon: Sprout,
   },
   {
     title: "Лесозаготовительная компания",
     challenge: "контроль лесных делян и выявление нелегальных вырубок в зоне интереса.",
     solution:
       "автоматические триггеры при обнаружении изменений, отчёты по площадям на данных Sentinel-2 и сверхвысокого разрешения.",
-    icon: Trees,
   },
   {
     title: "Судоходная компания",
     challenge: "безопасная навигация по Северному морскому пути.",
     solution:
       "оперативный продукт ледовой обстановки — радарные снимки, метеоданные и АИС в режиме близком к реальному времени, API-доступ.",
-    icon: Ship,
   },
 ];
 
@@ -435,7 +431,7 @@ export function MtlabLandingPage() {
         <div className="signal-line" />
       </div>
 
-      <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 pb-24 sm:px-6 lg:px-8 lg:pb-32">
+      <div className="mx-auto flex min-w-0 max-w-7xl flex-col gap-6 px-4 pb-24 sm:px-6 lg:px-8 lg:pb-32">
         <RevealSection id="platform" className="scroll-mt-28 py-4 sm:py-6">
           <div className="space-y-10">
             <SectionHeader
@@ -444,8 +440,9 @@ export function MtlabLandingPage() {
               description="Собираем данные из четырёх источников, обрабатываем их на собственных мощностях и передаём клиенту в виде готовых продуктов, отчётов или API."
             />
 
-            <div className="grid gap-6">
-              <div className="panel-card p-5 sm:p-6">
+            <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
+              {/* Шаг 1 — span 2 cols on desktop */}
+              <div className="panel-card p-5 sm:p-6 lg:col-span-2 lg:row-span-2">
                 <div className="mb-5 flex items-center justify-between gap-3">
                   <div>
                     <p className="text-sm uppercase tracking-[0.24em] text-primary">Шаг 1</p>
@@ -454,11 +451,11 @@ export function MtlabLandingPage() {
                   <Satellite className="size-6 text-primary" />
                 </div>
 
-                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                <div className="grid gap-4 sm:grid-cols-2">
                   {dataSources.map((item) => {
                     const Icon = item.icon;
                     return (
-                      <div key={item.title} className="rounded-[1.25rem] border border-border bg-panel p-4 xl:min-h-[13rem]">
+                      <div key={item.title} className="rounded-[1.25rem] border border-border bg-panel p-4">
                         <div className="mb-4 flex size-11 items-center justify-center rounded-full border border-primary/25 bg-accent text-primary">
                           <Icon className="size-5" />
                         </div>
@@ -470,21 +467,22 @@ export function MtlabLandingPage() {
                 </div>
               </div>
 
+              {/* Шаг 2 */}
               <div className="panel-card border-primary/35 bg-accent p-5 sm:p-6">
                 <div className="mb-5 flex items-center justify-between gap-3">
                   <div>
                     <p className="text-sm uppercase tracking-[0.24em] text-primary">Шаг 2</p>
-                    <h3 className="mt-2 font-display text-2xl font-bold text-foreground">Обработка</h3>
+                    <h3 className="mt-2 font-display text-2xl font-bold text-foreground">Обработка системой обработки информации дистанционного зондирования Земли</h3>
                   </div>
                   <Cpu className="size-6 text-primary" />
                 </div>
 
                 <div className="space-y-4 text-sm leading-7 text-foreground/88 sm:text-base">
-                  <p className="font-display text-xl font-bold text-foreground">СОИ ДЗЗ</p>
                   <p>16 серверов Intel Xeon · 52 GPU Tesla A100/H100 · 6 ПБ хранилища · ML-алгоритмы обнаружения и классификации изменений</p>
                 </div>
               </div>
 
+              {/* Шаг 3 */}
               <div className="panel-card p-5 sm:p-6">
                 <div className="mb-5 flex items-center justify-between gap-3">
                   <div>
@@ -553,6 +551,8 @@ export function MtlabLandingPage() {
             </div>
           </div>
         </RevealSection>
+
+        <PgoPortalSection />
 
         <RevealSection id="infrastructure" className="section-shell scroll-mt-28 rounded-[2rem] px-5 py-10 sm:px-8 sm:py-12 lg:px-10 lg:py-14" delay={100}>
           <div className="relative z-10 space-y-10">
@@ -639,28 +639,29 @@ export function MtlabLandingPage() {
           </div>
         </RevealSection>
 
-        <RevealSection id="scenarios" className="scroll-mt-28 space-y-8" delay={140}>
-          <SectionHeader kicker="Сценарии" title="Сценарии применения" />
+        <RevealSection id="scenarios" className="min-w-0 scroll-mt-28 space-y-8" delay={140}>
+          <SectionHeader title="Сценарии применения" />
 
-          <div className="hide-scrollbar -mx-4 flex snap-x snap-mandatory gap-5 overflow-x-auto px-4 md:mx-0 md:grid md:grid-cols-2 md:overflow-visible md:px-0">
-            {scenarios.map((scenario) => {
-              const Icon = scenario.icon;
-              return (
-                <article key={scenario.title} className="panel-card min-w-[88vw] snap-start p-6 sm:min-w-[30rem] md:min-w-0 md:p-7">
-                  <div className="mb-6 flex items-center gap-4">
-                    <div className="flex size-12 items-center justify-center rounded-2xl border border-primary/25 bg-accent text-primary">
-                      <Icon className="size-5" />
-                    </div>
-                    <h3 className="font-display text-2xl font-bold tracking-tight text-foreground">{scenario.title}</h3>
-                  </div>
+          <div className="min-w-0 -mx-4 px-4 md:-mx-6 md:px-6">
+            <div className="touch-pan-x overflow-x-auto overscroll-x-contain pb-2 [scrollbar-color:hsl(25_100%_50%_/_0.45)_transparent] [scrollbar-width:thin] [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-primary/50">
+              <div className="flex w-max max-w-none snap-x snap-mandatory flex-nowrap gap-4 md:gap-5">
+            {scenarios.map((scenario) => (
+                <article
+                  key={scenario.title}
+                  className="panel-card w-[min(88vw,19rem)] shrink-0 snap-start p-5 sm:w-[20.5rem] sm:p-6"
+                >
+                  <h3 className="font-display mb-4 text-lg font-bold leading-snug tracking-tight text-foreground sm:text-xl">
+                    {scenario.title}
+                  </h3>
 
-                  <div className="space-y-4 text-sm leading-7 sm:text-base">
-                    <p className="text-muted-foreground"><span className="font-semibold text-foreground">Задача:</span> {scenario.challenge}</p>
-                    <p className="text-muted-foreground"><span className="font-semibold text-foreground">Решение:</span> {scenario.solution}</p>
+                  <div className="space-y-3 text-sm leading-6 text-muted-foreground">
+                    <p><span className="font-semibold text-foreground">Задача:</span> {scenario.challenge}</p>
+                    <p><span className="font-semibold text-foreground">Решение:</span> {scenario.solution}</p>
                   </div>
                 </article>
-              );
-            })}
+            ))}
+              </div>
+            </div>
           </div>
         </RevealSection>
 
@@ -758,11 +759,6 @@ export function MtlabLandingPage() {
                   <Mail className="mt-1 size-5 shrink-0 text-primary" />
                   <a href="mailto:info@mtlab.space" className="transition-colors hover:text-foreground">info@mtlab.space</a>
                 </div>
-              </div>
-
-              <div className="rounded-[1.5rem] border border-primary/20 bg-accent p-5 text-sm leading-7 text-foreground/88">
-                <p className="font-display text-lg font-bold text-foreground">Для кого ПГО</p>
-                <p className="mt-3">Государственные заказчики, агрохолдинги, банки, лесопользователи, судоходные компании и разработчики геосервисов.</p>
               </div>
             </aside>
           </div>

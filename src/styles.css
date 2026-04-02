@@ -230,17 +230,6 @@
     border: 1px solid hsl(0 0% 100% / 0.08);
     background: linear-gradient(180deg, hsl(0 0% 10% / 0.78), hsl(0 0% 8% / 0.96));
     box-shadow: var(--shadow-soft);
-    transition:
-      border-color 280ms ease,
-      transform 280ms ease,
-      box-shadow 280ms ease,
-      background-color 280ms ease;
-  }
-
-  .panel-card:hover {
-    transform: translateY(-4px);
-    border-color: hsl(25 100% 50% / 0.48);
-    box-shadow: var(--shadow-signal);
   }
 
   .panel-card::before {
