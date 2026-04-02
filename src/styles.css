@@ -275,6 +275,10 @@
     padding: 1rem 1.25rem;
   }
 
+  .infra-row--fleet {
+    grid-template-columns: 1.1fr 1fr 0.8fr;
+  }
+
   .hero-interactive {
     position: relative;
     overflow: hidden;
