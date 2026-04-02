@@ -10,7 +10,6 @@ import {
   Mail,
   MapPinned,
   Menu,
-  Orbit,
   Phone,
   Plane,
   Radar,
@@ -22,6 +21,7 @@ import {
 } from "lucide-react";
 import { z } from "zod";
 
+import logoWhite from "@/assets/LogoWhite.svg";
 import heroEarth from "@/assets/mtlab-hero-earth.jpg";
 import { RevealSection } from "@/components/mtlab/reveal-section";
 import { PgoPortalSection } from "@/components/mtlab/pgo-portal-section";
@@ -288,6 +288,38 @@ export function MtlabLandingPage() {
   const [errors, setErrors] = React.useState<ContactErrors>({});
   const [submitted, setSubmitted] = React.useState(false);
   const heroRef = React.useRef<HTMLDivElement | null>(null);
+  const scenariosWheelZoneRef = React.useRef<HTMLDivElement | null>(null);
+  const scenariosScrollRef = React.useRef<HTMLDivElement | null>(null);
+
+  React.useEffect(() => {
+    const zone = scenariosWheelZoneRef.current;
+    const el = scenariosScrollRef.current;
+    if (!zone || !el) return;
+
+    const onWheel = (e: WheelEvent) => {
+      const maxScroll = el.scrollWidth - el.clientWidth;
+      if (maxScroll <= 0) return;
+
+      const dy = e.deltaY;
+      const dx = e.deltaX;
+      const primarilyVertical = Math.abs(dy) >= Math.abs(dx);
+      const delta = primarilyVertical ? dy : dx;
+      if (Math.abs(delta) < 0.01) return;
+
+      const { scrollLeft } = el;
+      const atStart = scrollLeft <= 0;
+      const atEnd = scrollLeft >= maxScroll - 0.5;
+
+      if (delta > 0 && atEnd) return;
+      if (delta < 0 && atStart) return;
+
+      e.preventDefault();
+      el.scrollLeft = Math.max(0, Math.min(maxScroll, scrollLeft + delta));
+    };
+
+    zone.addEventListener("wheel", onWheel, { passive: false });
+    return () => zone.removeEventListener("wheel", onWheel);
+  }, []);
 
   const handlePointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
     const node = heroRef.current;
@@ -339,14 +371,14 @@ export function MtlabLandingPage() {
     <main className="bg-background text-foreground">
       <header className="fixed inset-x-0 top-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
-          <a href="#top" className="flex min-w-0 items-center gap-3">
-            <div className="flex size-11 items-center justify-center rounded-full border border-primary/45 bg-accent text-primary shadow-[var(--shadow-signal)]">
-              <Orbit className="size-5" />
-            </div>
-            <div>
-              <div className="font-display text-base font-bold tracking-[0.14em] text-foreground sm:text-lg">МТ-ЛАБ</div>
-              <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Earth observation</div>
-            </div>
+          <a href="#top" className="flex min-w-0 shrink-0 items-center">
+            <img
+              src={logoWhite}
+              alt="МТ-ЛАБ"
+              width={186}
+              height={111}
+              className="h-11 w-auto sm:h-14"
+            />
           </a>
 
           <nav className="hidden items-center gap-1 lg:flex">
@@ -390,7 +422,7 @@ export function MtlabLandingPage() {
       <section
         id="top"
         ref={heroRef}
-        className="hero-interactive site-grid relative flex min-h-screen items-end overflow-hidden"
+        className="hero-interactive site-grid relative flex min-h-screen flex-col overflow-hidden"
         onPointerMove={handlePointerMove}
         onPointerLeave={handlePointerLeave}
       >
@@ -403,27 +435,29 @@ export function MtlabLandingPage() {
         />
         <div className="absolute inset-0" style={{ background: "var(--hero-overlay)" }} />
 
-        <div className="relative z-10 mx-auto flex w-full max-w-7xl flex-col justify-end px-4 pb-14 pt-28 sm:px-6 lg:px-8 lg:pb-20">
-          <RevealSection className="max-w-4xl space-y-8">
-            <div className="space-y-5">
-              <p className="section-kicker">Платформа геопространственной осведомлённости</p>
-              <h1 className="text-balance font-display text-4xl font-bold leading-[0.94] tracking-[-0.05em] text-foreground sm:text-6xl lg:text-7xl">
-                МТ-ЛАБ — российская компания спутникового мониторинга Земли
-              </h1>
-              <p className="max-w-3xl text-base leading-8 text-muted-foreground sm:text-xl">
-                Помогаем государству и бизнесу принимать решения на основе актуальных данных дистанционного зондирования Земли.
-              </p>
-            </div>
+        <div className="relative z-10 flex min-h-0 w-full flex-1 flex-col justify-center px-4 pb-14 pt-28 sm:px-6 lg:px-8 lg:pb-20">
+          <div className="mx-auto w-full max-w-7xl -translate-y-6 sm:-translate-y-10 lg:-translate-y-12">
+            <RevealSection className="max-w-4xl space-y-8">
+              <div className="space-y-5">
+                <p className="section-kicker">Платформа геопространственной осведомлённости</p>
+                <h1 className="text-balance font-display text-4xl font-bold leading-[0.94] tracking-[-0.05em] text-foreground sm:text-6xl lg:text-7xl">
+                  МТ-ЛАБ — российская компания спутникового мониторинга Земли
+                </h1>
+                <p className="max-w-3xl text-base leading-8 text-muted-foreground sm:text-xl">
+                  Помогаем государству и бизнесу принимать решения на основе актуальных данных дистанционного зондирования Земли.
+                </p>
+              </div>
 
-            <div className="flex flex-col items-start gap-4 sm:flex-row">
-              <Button asChild variant="hero" size="lg">
-                <a href="#contacts">
-                  Рассказать о задаче
-                  <ArrowRight />
-                </a>
-              </Button>
-            </div>
-          </RevealSection>
+              <div className="flex flex-col items-start gap-4 sm:flex-row">
+                <Button asChild variant="hero" size="lg">
+                  <a href="#contacts">
+                    Рассказать о задаче
+                    <ArrowRight />
+                  </a>
+                </Button>
+              </div>
+            </RevealSection>
+          </div>
         </div>
       </section>
 
@@ -642,11 +676,15 @@ export function MtlabLandingPage() {
           </div>
         </RevealSection>
 
-        <RevealSection id="scenarios" className="min-w-0 scroll-mt-28 space-y-8" delay={140}>
-          <SectionHeader title="Сценарии применения" />
+        <RevealSection id="scenarios" className="min-w-0 scroll-mt-28" delay={140}>
+          <div ref={scenariosWheelZoneRef} className="space-y-8">
+            <SectionHeader title="Сценарии применения" />
 
-          <div className="min-w-0 -mx-4 px-4 md:-mx-6 md:px-6">
-            <div className="touch-pan-x overflow-x-auto overscroll-x-contain pb-2 [scrollbar-color:hsl(25_100%_50%_/_0.45)_transparent] [scrollbar-width:thin] [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-primary/50">
+            <div className="min-w-0 -mx-4 px-4 md:-mx-6 md:px-6">
+            <div
+              ref={scenariosScrollRef}
+              className="touch-pan-x overflow-x-auto overscroll-x-contain pb-2 [scrollbar-color:hsl(25_100%_50%_/_0.45)_transparent] [scrollbar-width:thin] [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-primary/50"
+            >
               <div className="flex w-max max-w-none snap-x snap-mandatory flex-nowrap gap-4 md:gap-5">
             {scenarios.map((scenario) => (
                 <article
@@ -664,6 +702,7 @@ export function MtlabLandingPage() {
                 </article>
             ))}
               </div>
+            </div>
             </div>
           </div>
         </RevealSection>
