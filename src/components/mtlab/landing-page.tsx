@@ -227,12 +227,6 @@ function ProductCard({ product, active = false }: { product: (typeof products)[n
           })}
         </div>
       ) : null}
-
-      <div className="mt-auto pt-2">
-        <Button asChild variant="signalOutline" size="lg">
-          <a href="#contacts">Запросить расчёт</a>
-        </Button>
-      </div>
     </article>
   );
 }
@@ -501,6 +495,15 @@ export function MtlabLandingPage() {
             {products.map((product) => (
               <ProductCard key={product.title} product={product} />
             ))}
+          </div>
+
+          <div className="mx-auto flex max-w-3xl flex-col items-center gap-5 px-1 pt-2 text-center sm:px-0">
+            <p className="text-base leading-7 text-muted-foreground sm:text-lg">
+              Если что-то подошло — напишите нам. Если не подошло тоже напишите: подберём решение под вашу задачу.
+            </p>
+            <Button asChild variant="hero" size="lg">
+              <a href="#contacts">Запросить расчёт</a>
+            </Button>
           </div>
         </RevealSection>
 
