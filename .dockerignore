@@ -1,0 +1,10 @@
+node_modules
+dist
+.output
+.vercel
+.git
+.github
+*.md
+.env
+.env.*
+!.env.example

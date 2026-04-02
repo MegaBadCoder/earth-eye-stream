@@ -162,9 +162,11 @@ function devServerFnErrorLogger() {
 }
 
 export default defineConfig(({ command, mode }) => {
-  // Cloudflare: локальный/CF билд. Vercel выставляет VERCEL=1 — нужен Nitro (см. vercel.com/docs TanStack Start).
+  // Vercel: VERCEL=1 → Nitro preset vercel. Docker/CI: DEPLOY_TARGET=docker → Nitro node-server. Иначе → Cloudflare Workers.
   const isVercelBuild = command === "build" && process.env.VERCEL === "1";
-  const useCloudflare = command === "build" && !isVercelBuild;
+  const isDockerBuild = command === "build" && process.env.DEPLOY_TARGET === "docker";
+  const useNitro = isVercelBuild || isDockerBuild;
+  const useCloudflare = command === "build" && !useNitro;
 
   const env = loadEnv(mode, process.cwd(), "VITE_");
   const envDefine: Record<string, string> = {};
@@ -193,6 +195,7 @@ export default defineConfig(({ command, mode }) => {
       devServerFnErrorLogger(),
       ...(useCloudflare ? [cloudflare({ viteEnvironment: { name: "ssr" } })] : []),
       tanstackStart(),
+      ...(isDockerBuild ? [nitro({ preset: "node-server" })] : []),
       ...(isVercelBuild ? [nitro()] : []),
       viteReact(),
       mode === "development" && componentTagger(),

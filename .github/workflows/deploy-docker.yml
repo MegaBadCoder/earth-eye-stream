@@ -1,0 +1,69 @@
+# Секреты: DOCKER_REG_DOMAIN, DOCKER_REG_TOKEN, HOST_IP, HOST_USER, HOST_PASSWORD
+# Опционально: DOCKER_REG_USER — если не задан, для login используется github.actor (удобно для ghcr.io)
+name: Deploy Docker
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Image name (lowercase для ghcr.io)
+        id: meta
+        run: |
+          REG="${{ secrets.DOCKER_REG_DOMAIN }}"
+          REPO=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          echo "image=${REG}/${REPO}:latest" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.DOCKER_REG_DOMAIN }}
+          username: ${{ secrets.DOCKER_REG_USER || github.actor }}
+          password: ${{ secrets.DOCKER_REG_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.image }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1.2.2
+        env:
+          IMAGE: ${{ steps.meta.outputs.image }}
+          REG_DOMAIN: ${{ secrets.DOCKER_REG_DOMAIN }}
+          REG_TOKEN: ${{ secrets.DOCKER_REG_TOKEN }}
+          REG_USER: ${{ secrets.DOCKER_REG_USER }}
+          GITHUB_ACTOR: ${{ github.actor }}
+        with:
+          host: ${{ secrets.HOST_IP }}
+          username: ${{ secrets.HOST_USER }}
+          password: ${{ secrets.HOST_PASSWORD }}
+          envs: IMAGE,REG_DOMAIN,REG_TOKEN,REG_USER,GITHUB_ACTOR
+          script: |
+            set -e
+            USERNAME="${REG_USER:-$GITHUB_ACTOR}"
+            echo "$REG_TOKEN" | docker login "$REG_DOMAIN" -u "$USERNAME" --password-stdin
+            docker pull "$IMAGE"
+            docker stop mtlab-landing 2>/dev/null || true
+            docker rm mtlab-landing 2>/dev/null || true
+            docker run -d \
+              --name mtlab-landing \
+              --restart unless-stopped \
+              -p 127.0.0.1:3000:3000 \
+              "$IMAGE"

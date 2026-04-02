@@ -1,0 +1,13 @@
+# Скопируй на сервер (например /etc/caddy/Caddyfile.d/mtlab-landing.caddy)
+# Контейнер: docker run ... -p 127.0.0.1:3000:3000
+#
+# Сайт открывается на порту 5173 (HTTP). Для HTTPS на 443 замени блоки на:
+#   rocketup.tech { reverse_proxy 127.0.0.1:3000 }
+
+rocketup.tech:5173 {
+	reverse_proxy 127.0.0.1:3000
+}
+
+www.rocketup.tech:5173 {
+	redir http://rocketup.tech:5173{uri} permanent
+}
