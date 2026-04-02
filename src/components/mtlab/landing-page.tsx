@@ -80,11 +80,31 @@ const products = [
     description:
       "Готовые сервисы регулярного контроля с автоматическими оповещениями — без ручных проверок.",
     tags: [
-      "Пожары — термоточки, огневой фронт, выгоревшие площади, предиктивная аналитика. Оповещения в Telegram / MAX.",
-      "Вырубки — периодический контроль от муниципального до федерального масштаба, автоматические триггеры при изменениях, интеграция с ГИС.",
-      "Ледовая обстановка — радарные снимки Sentinel-1, данные метеоКА и АИС, режим близкий к реальному времени, для навигации по Севморпути.",
-      "Сельхозземли — фактическое использование, уточнение границ полей, состояние посевов, сверка с кадастром.",
-      "Незаконные постройки — сегментация зданий и инфраструктуры, сверка с ЕГРН, выявление расхождений и неучтённых объектов.",
+      {
+        title: "Пожары",
+        details:
+          "Термоточки, огневой фронт, выгоревшие площади, предиктивная аналитика. Оповещения в Telegram / MAX.",
+      },
+      {
+        title: "Вырубки",
+        details:
+          "Периодический контроль от муниципального до федерального масштаба, автоматические триггеры при изменениях, интеграция с ГИС.",
+      },
+      {
+        title: "Ледовая обстановка",
+        details:
+          "Радарные снимки Sentinel-1, данные метеоКА и АИС, режим близкий к реальному времени, для навигации по Севморпути.",
+      },
+      {
+        title: "Сельхозземли",
+        details:
+          "Фактическое использование, уточнение границ полей, состояние посевов, сверка с кадастром.",
+      },
+      {
+        title: "Незаконные постройки",
+        details:
+          "Сегментация зданий и инфраструктуры, сверка с ЕГРН, выявление расхождений и неучтённых объектов.",
+      },
     ],
   },
   {
@@ -189,6 +209,9 @@ function SectionHeader({
 }
 
 function ProductCard({ product, active = false }: { product: (typeof products)[number]; active?: boolean }) {
+  const [activeTag, setActiveTag] = React.useState(product.tags?.[0]?.title ?? "");
+  const selectedTag = product.tags?.find((tag) => tag.title === activeTag) ?? product.tags?.[0];
+
   return (
     <article
       className={cn(
@@ -213,18 +236,50 @@ function ProductCard({ product, active = false }: { product: (typeof products)[n
       ) : null}
 
       {product.tags ? (
-        <div className="space-y-3">
-          {product.tags.map((tag, index) => {
+        <div className="space-y-4">
+          <div className="hide-scrollbar flex flex-wrap gap-2 overflow-x-auto pb-1">
+            {product.tags.map((tag) => {
+              const isCurrent = tag.title === selectedTag?.title;
+
+              return (
+                <button
+                  key={tag.title}
+                  type="button"
+                  className={cn(
+                    "monitor-chip rounded-xl border px-4 py-2 text-sm whitespace-nowrap transition-all",
+                    isCurrent
+                      ? "border-primary bg-accent text-foreground shadow-[var(--shadow-signal)]"
+                      : "border-border bg-panel text-muted-foreground hover:border-primary/45 hover:text-foreground",
+                  )}
+                  onMouseEnter={() => setActiveTag(tag.title)}
+                  onFocus={() => setActiveTag(tag.title)}
+                  onClick={() => setActiveTag(tag.title)}
+                >
+                  {tag.title}
+                </button>
+              );
+            })}
+          </div>
+
+          {selectedTag ? (() => {
+            const index = product.tags.findIndex((tag) => tag.title === selectedTag.title);
             const Icon = [Flame, Trees, Waves, Sprout, Building2][index];
+
             return (
-              <div key={tag} className="tag-chip rounded-2xl px-4 py-3 text-sm leading-6">
+              <div className="tag-chip rounded-2xl px-4 py-4 text-sm leading-6">
+                <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-primary">
+                  <span>Подробнее</span>
+                </div>
                 <div className="flex gap-3">
                   <Icon className="mt-1 size-4 shrink-0 text-primary" />
-                  <span>{tag}</span>
+                  <div>
+                    <p className="font-medium text-foreground">{selectedTag.title}</p>
+                    <p className="mt-1 text-muted-foreground">{selectedTag.details}</p>
+                  </div>
                 </div>
               </div>
             );
-          })}
+          })() : null}
         </div>
       ) : null}
     </article>
@@ -462,9 +517,9 @@ export function MtlabLandingPage() {
           </div>
         </RevealSection>
 
-        <RevealSection id="products" className="scroll-mt-28 space-y-8 rounded-[2rem] border border-border/60 px-0 py-4 sm:py-6" delay={80}>
+        <RevealSection id="products" className="scroll-mt-28 space-y-8 rounded-[2rem] px-0 py-4 sm:py-6" delay={80}>
           <div className="px-1 sm:px-0">
-            <SectionHeader kicker="Продукты" title="Продукты" />
+            <SectionHeader title="Продукты" />
           </div>
 
           <div className="md:hidden">
@@ -499,11 +554,16 @@ export function MtlabLandingPage() {
 
           <div className="mx-auto flex max-w-3xl flex-col items-center gap-5 px-1 pt-2 text-center sm:px-0">
             <p className="text-base leading-7 text-muted-foreground sm:text-lg">
-              Если что-то подошло — напишите нам. Если не подошло тоже напишите: подберём решение под вашу задачу.
+              Не нашли подходящее? Мы собираем решения под задачу — напишите, и подберём решение.
             </p>
-            <Button asChild variant="hero" size="lg">
-              <a href="#contacts">Запросить расчёт</a>
-            </Button>
+            <div className="flex flex-col items-center gap-3 sm:flex-row sm:flex-wrap sm:justify-center">
+              <Button asChild variant="hero" size="lg">
+                <a href="#contacts">Запросить расчёт на услугу</a>
+              </Button>
+              <Button asChild variant="signalOutline" size="lg">
+                <a href="#contacts">Рассказать о своей задаче</a>
+              </Button>
+            </div>
           </div>
         </RevealSection>
 
@@ -567,7 +627,7 @@ export function MtlabLandingPage() {
 
         <RevealSection className="section-shell rounded-[2rem] px-5 py-10 sm:px-8 sm:py-12 lg:px-10 lg:py-14" delay={120}>
           <div className="relative z-10 space-y-10">
-            <SectionHeader kicker="СОИ ДЗЗ" title="Вычислительные мощности СОИ ДЗЗ — для вашей разработки" />
+            <SectionHeader title="Вычислительные мощности СОИ ДЗЗ — для вашей разработки" />
 
             <div className="grid gap-5 md:grid-cols-3">
               {computeStats.map((stat) => (
@@ -595,7 +655,6 @@ export function MtlabLandingPage() {
 
               <div className="panel-card flex flex-col justify-between gap-6 p-6 sm:p-7">
                 <div className="space-y-4">
-                  <p className="section-kicker">Infrastructure for builders</p>
                   <h3 className="font-display text-2xl font-bold text-foreground">Запускайте разработку и вычисления на мощностях МТ-ЛАБ</h3>
                   <p className="text-sm leading-7 text-muted-foreground sm:text-base">
                     Доступ для геосервисов, R&amp;D-команд и продуктовых разработчиков, которым нужна быстрая обработка спутниковых данных и ML-пайплайны.
@@ -713,7 +772,6 @@ export function MtlabLandingPage() {
 
             <aside className="panel-card flex flex-col gap-6 p-6 sm:p-7">
               <div className="space-y-3">
-                <p className="section-kicker">MT-LAB</p>
                 <h3 className="font-display text-2xl font-bold text-foreground">ООО «МТ-ЛАБ»</h3>
               </div>
 
