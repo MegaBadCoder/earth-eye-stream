@@ -2,6 +2,7 @@ import path from "path";
 import { defineConfig, loadEnv } from "vite";
 import tsConfigPaths from "vite-tsconfig-paths";
 import { cloudflare } from "@cloudflare/vite-plugin";
+import { nitro } from "nitro/vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import viteReact from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
@@ -161,9 +162,9 @@ function devServerFnErrorLogger() {
 }
 
 export default defineConfig(({ command, mode }) => {
-  // Use Cloudflare Workers plugin for builds (produces worker output)
-  // Skip for dev server (command=serve) since workerd runtime isn't available
-  const useCloudflare = command === "build";
+  // Cloudflare: локальный/CF билд. Vercel выставляет VERCEL=1 — нужен Nitro (см. vercel.com/docs TanStack Start).
+  const isVercelBuild = command === "build" && process.env.VERCEL === "1";
+  const useCloudflare = command === "build" && !isVercelBuild;
 
   const env = loadEnv(mode, process.cwd(), "VITE_");
   const envDefine: Record<string, string> = {};
@@ -192,6 +193,7 @@ export default defineConfig(({ command, mode }) => {
       devServerFnErrorLogger(),
       ...(useCloudflare ? [cloudflare({ viteEnvironment: { name: "ssr" } })] : []),
       tanstackStart(),
+      ...(isVercelBuild ? [nitro()] : []),
       viteReact(),
       mode === "development" && componentTagger(),
     ].filter(Boolean),
