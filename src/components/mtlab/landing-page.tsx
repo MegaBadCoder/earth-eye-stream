@@ -24,7 +24,6 @@ import {
 import { z } from "zod";
 
 import heroEarth from "@/assets/mtlab-hero-earth.jpg";
-import russiaNetwork from "@/assets/mtlab-russia-network.jpg";
 import { RevealSection } from "@/components/mtlab/reveal-section";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -121,9 +120,9 @@ const products = [
 ];
 
 const satelliteFleet = [
-  { name: "КОЭН", type: "Оптический", resolution: "50 см", launch: "2026" },
-  { name: "EOS-O", type: "Оптический", resolution: "50 см", launch: "2027" },
-  { name: "EOS-R", type: "Мультисенсор + радар", resolution: "—", launch: "2028" },
+  { name: "КОЭН", type: "Оптический", resolution: "50 см" },
+  { name: "EOS-O", type: "Оптический", resolution: "50 см" },
+  { name: "EOS-R", type: "Мультисенсор + радар", resolution: "—" },
 ];
 
 const computeStats = [
@@ -445,7 +444,7 @@ export function MtlabLandingPage() {
               description="Собираем данные из четырёх источников, обрабатываем их на собственных мощностях и передаём клиенту в виде готовых продуктов, отчётов или API."
             />
 
-            <div className="grid gap-6 xl:grid-cols-[1.3fr_auto_1fr_auto_1fr] xl:items-start">
+            <div className="grid gap-6 lg:max-w-4xl">
               <div className="panel-card p-5 sm:p-6">
                 <div className="mb-5 flex items-center justify-between gap-3">
                   <div>
@@ -471,12 +470,6 @@ export function MtlabLandingPage() {
                 </div>
               </div>
 
-              <div className="flex items-center justify-center py-4 xl:py-0">
-                <div className="flex size-12 items-center justify-center rounded-full border border-primary/30 bg-accent text-primary">
-                  <ArrowRight className="size-5" />
-                </div>
-              </div>
-
               <div className="panel-card border-primary/35 bg-accent p-5 sm:p-6">
                 <div className="mb-5 flex items-center justify-between gap-3">
                   <div>
@@ -489,12 +482,6 @@ export function MtlabLandingPage() {
                 <div className="space-y-4 text-sm leading-7 text-foreground/88 sm:text-base">
                   <p className="font-display text-xl font-bold text-foreground">СОИ ДЗЗ</p>
                   <p>16 серверов Intel Xeon · 52 GPU Tesla A100/H100 · 6 ПБ хранилища · ML-алгоритмы обнаружения и классификации изменений</p>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-center py-4 xl:py-0">
-                <div className="flex size-12 items-center justify-center rounded-full border border-primary/30 bg-accent text-primary">
-                  <ArrowRight className="size-5" />
                 </div>
               </div>
 
@@ -575,7 +562,7 @@ export function MtlabLandingPage() {
               Мы не только покупаем данные на рынке — мы строим собственную цепочку от спутника до клиента.
             </blockquote>
 
-            <div className="grid gap-8 lg:grid-cols-[1.05fr_1fr] lg:items-start">
+            <div className="grid gap-8">
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
                   <Radar className="size-5 text-primary" />
@@ -583,38 +570,25 @@ export function MtlabLandingPage() {
                 </div>
 
                 <div className="space-y-3">
-                  <div className="infra-row text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                  <div className="infra-row infra-row--fleet text-xs uppercase tracking-[0.18em] text-muted-foreground">
                     <span>КА</span>
                     <span>Тип</span>
                     <span>Разрешение</span>
-                    <span>Запуск</span>
                   </div>
                   {satelliteFleet.map((item) => (
-                    <div key={item.name} className="infra-row text-sm text-foreground/90 sm:text-base">
+                    <div key={item.name} className="infra-row infra-row--fleet text-sm text-foreground/90 sm:text-base">
                       <span className="font-display font-bold text-foreground">{item.name}</span>
                       <span>{item.type}</span>
                       <span>{item.resolution}</span>
-                      <span>{item.launch}</span>
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div className="space-y-5">
+              <div className="panel-card space-y-5 p-6 sm:p-7">
                 <div className="flex items-center gap-3">
                   <MapPinned className="size-5 text-primary" />
                   <h3 className="font-display text-2xl font-bold text-foreground">Наземная инфраструктура</h3>
-                </div>
-
-                <div className="panel-card overflow-hidden rounded-[1.75rem]">
-                  <img
-                    src={russiaNetwork}
-                    alt="Схема наземной сети МТ-ЛАБ на карте России"
-                    className="aspect-[1.12/1] w-full object-cover"
-                    loading="lazy"
-                    width={1024}
-                    height={1024}
-                  />
                 </div>
 
                 <p className="text-sm leading-7 text-muted-foreground sm:text-base">
