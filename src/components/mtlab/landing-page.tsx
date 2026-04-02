@@ -599,37 +599,39 @@ export function MtlabLandingPage() {
           </div>
         </RevealSection>
 
-        <RevealSection className="rounded-[2rem] px-5 py-10 sm:px-8 sm:py-12 lg:px-10 lg:py-14" delay={120}>
-          <div className="mx-auto flex max-w-5xl flex-col items-center space-y-10 text-center">
-            <SectionHeader title="Вычислительные мощности СОИ ДЗЗ — для вашей разработки" />
+        <RevealSection className="rounded-[2rem] px-5 py-14 sm:px-8 sm:py-16 lg:px-10 lg:py-20" delay={120}>
+          <div className="mx-auto flex max-w-5xl flex-col items-center space-y-12 text-center">
+            <div className="max-w-4xl">
+              <SectionHeader title="Вычислительные мощности СОИ ДЗЗ — для вашей разработки" />
+            </div>
 
-            <div className="grid w-full gap-5 md:grid-cols-3">
+            <div className="grid w-full max-w-3xl gap-8 md:grid-cols-3 md:gap-10">
               {computeStats.map((stat) => (
-                <div key={stat.label} className="p-3 sm:p-4">
+                <div key={stat.label} className="flex flex-col items-center p-2">
                   <div className="metric-value text-primary">{stat.value}</div>
-                  <p className="mt-3 text-base leading-7 text-muted-foreground">{stat.label}</p>
+                  <p className="mt-2 text-base leading-7 text-muted-foreground">{stat.label}</p>
                 </div>
               ))}
             </div>
 
-            <div className="max-w-4xl space-y-8 text-sm leading-7 text-muted-foreground sm:text-base">
+            <div className="max-w-4xl space-y-8 text-base leading-8 text-muted-foreground sm:text-[1.05rem]">
               <p>
                 Ядром платформы ПГО является <span className="font-semibold text-foreground">СОИ ДЗЗ</span> — масштабируемая система потоковой обработки данных, разработанная МТ-ЛАБ при поддержке Фонда НТИ.
               </p>
               <p>Мы открываем доступ к этим мощностям для внешних разработчиков и компаний.</p>
-              <div className="mx-auto max-w-3xl rounded-[1.5rem] border border-border bg-panel p-5 text-left sm:p-7">
+              <div className="mx-auto max-w-3xl rounded-[1.5rem] border border-border bg-panel/70 p-6 text-left shadow-[var(--shadow-soft)] sm:p-8">
                 <p className="font-display text-lg font-bold text-foreground">Подходит, если вам нужно:</p>
-                <ul className="mt-4 space-y-3 text-foreground/88">
-                  <li className="flex gap-3"><ChevronRight className="mt-1 size-4 shrink-0 text-primary" /><span>Обрабатывать большие объёмы геопространственных данных быстро и без собственной инфраструктуры</span></li>
-                  <li className="flex gap-3"><ChevronRight className="mt-1 size-4 shrink-0 text-primary" /><span>Обучать или запускать ML-модели на спутниковых снимках</span></li>
-                  <li className="flex gap-3"><ChevronRight className="mt-1 size-4 shrink-0 text-primary" /><span>Разрабатывать и тестировать продукты в сфере ДЗЗ, не вкладываясь в железо</span></li>
+                <ul className="mt-5 list-disc space-y-3 pl-6 text-foreground/88 marker:text-muted-foreground">
+                  <li>Обрабатывать большие объёмы геопространственных данных быстро и без собственной инфраструктуры</li>
+                  <li>Обучать или запускать ML-модели на спутниковых снимках</li>
+                  <li>Разрабатывать и тестировать продукты в сфере ДЗЗ, не вкладываясь в железо</li>
                 </ul>
               </div>
-              <p className="mx-auto max-w-3xl">
+              <p className="mx-auto max-w-3xl text-balance">
                 Вы получаете доступ к производительности уровня крупных ЦОД — без капитальных затрат и операционных хлопот.
               </p>
               <div className="flex justify-center pt-2">
-                <Button asChild variant="signalOutline" size="lg">
+                <Button asChild variant="signalOutline" size="lg" className="min-w-72">
                   <a href="#contacts">Обсудить условия доступа</a>
                 </Button>
               </div>
