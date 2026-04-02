@@ -1,31 +1,10 @@
-# Пуш образа: по умолчанию ghcr.io (доступен с GitHub Actions).
-# Timeweb (*.registry.twcstorage.ru) с раннеров GHA часто даёт «context deadline exceeded» — не маршрут/секрет, а сеть.
-#
-# Репозиторий → Settings → Variables:
-#   DOCKER_PUSH_TARGET = ghcr   (по умолчанию, можно не задавать)
-#   DOCKER_PUSH_TARGET = custom — свой registry (секреты ниже)
-#
-# При ghcr:
-#   В CI: login через GITHUB_TOKEN (packages: write).
-#   На сервере pull: либо сделай пакет public в ghcr (pull без логина), либо Secrets:
-#     GHCR_PULL_TOKEN — PAT с read:packages
-#     GHCR_PULL_USER  — опционально (по умолчанию владелец репо)
-#
-# При custom (Timeweb и т.д.):
-#   DOCKER_REG_DOMAIN = только хост (xxx.registry.twcstorage.ru)
-#   DOCKER_REG_USER, DOCKER_REG_TOKEN — как в панели
-#
-# Образ custom: {host}/{user}/{repo-short}:latest
-# Образ ghcr:   ghcr.io/{owner}/{repo}:latest (lower case)
+# Без registry: build на GHA → docker save → scp → docker load → run
+# Secrets: HOST_IP, HOST_USER, HOST_PASSWORD
 name: Deploy Docker
 
 on:
   push:
     branches: [main]
-
-permissions:
-  contents: read
-  packages: write
 
 jobs:
   build-and-deploy:
@@ -33,109 +12,44 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Configure registry (ghcr | custom)
-        id: cfg
-        env:
-          PUSH_TARGET_IN: ${{ vars.DOCKER_PUSH_TARGET }}
-          RAW_DOMAIN: ${{ secrets.DOCKER_REG_DOMAIN }}
-          REG_USER_IN: ${{ secrets.DOCKER_REG_USER }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-          GITHUB_ACTOR: ${{ github.actor }}
-        run: |
-          set -e
-          T="${PUSH_TARGET_IN:-ghcr}"
-          echo "target=$T" >> "$GITHUB_OUTPUT"
-
-          if [ "$T" = "ghcr" ]; then
-            REPO_LC=$(echo "$GITHUB_REPOSITORY" | tr '[:upper:]' '[:lower:]')
-            echo "host=ghcr.io" >> "$GITHUB_OUTPUT"
-            echo "image=ghcr.io/${REPO_LC}:latest" >> "$GITHUB_OUTPUT"
-            echo "Using GHCR (обход таймаута до Timeweb с GHA): ghcr.io/${REPO_LC}:latest"
-            exit 0
-          fi
-
-          if [ "$T" != "custom" ]; then
-            echo "::error::DOCKER_PUSH_TARGET должен быть ghcr или custom, сейчас: $T"
-            exit 1
-          fi
-
-          H=$(printf '%s' "$RAW_DOMAIN" | tr -d '\r\n' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
-          H="${H#https://}"
-          H="${H#http://}"
-          H="${H%%/*}"
-          H="${H%/}"
-          if [ -z "$H" ]; then
-            echo "::error::custom: задай DOCKER_REG_DOMAIN (только хост)"
-            exit 1
-          fi
-          USER=$(printf '%s' "${REG_USER_IN:-$GITHUB_ACTOR}" | tr '[:upper:]' '[:lower:]')
-          SHORT=$(echo "$GITHUB_REPOSITORY" | cut -d/ -f2 | tr '[:upper:]' '[:lower:]')
-          IMG="${H}/${USER}/${SHORT}:latest"
-          echo "host=$H" >> "$GITHUB_OUTPUT"
-          echo "image=$IMG" >> "$GITHUB_OUTPUT"
-          echo "Full image (custom): $IMG"
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Log in to GHCR
-        if: steps.cfg.outputs.target == 'ghcr'
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Log in to custom registry
-        if: steps.cfg.outputs.target == 'custom'
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ steps.cfg.outputs.host }}
-          username: ${{ secrets.DOCKER_REG_USER || github.actor }}
-          password: ${{ secrets.DOCKER_REG_TOKEN }}
-
-      - name: Build and push
+      - name: Build image
         uses: docker/build-push-action@v6
         with:
           context: .
-          push: true
-          tags: ${{ steps.cfg.outputs.image }}
+          load: true
+          tags: mtlab-landing:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Deploy over SSH
-        uses: appleboy/ssh-action@v1.2.2
-        env:
-          IMAGE: ${{ steps.cfg.outputs.image }}
-          REG_HOST: ${{ steps.cfg.outputs.host }}
-          TARGET: ${{ steps.cfg.outputs.target }}
-          DOCKER_REG_TOKEN: ${{ secrets.DOCKER_REG_TOKEN }}
-          REG_USER: ${{ secrets.DOCKER_REG_USER }}
-          GHCR_PULL_TOKEN: ${{ secrets.GHCR_PULL_TOKEN }}
-          GHCR_PULL_USER: ${{ secrets.GHCR_PULL_USER }}
-          GITHUB_ACTOR: ${{ github.actor }}
-          GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
+      - name: Save image
+        run: docker save mtlab-landing:latest | gzip > mtlab-landing.tar.gz
+
+      - name: Copy image to server
+        uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.HOST_IP }}
           username: ${{ secrets.HOST_USER }}
           password: ${{ secrets.HOST_PASSWORD }}
-          envs: IMAGE,REG_HOST,TARGET,DOCKER_REG_TOKEN,REG_USER,GHCR_PULL_TOKEN,GHCR_PULL_USER,GITHUB_ACTOR,GITHUB_REPOSITORY_OWNER
+          source: mtlab-landing.tar.gz
+          target: /tmp/
+
+      - name: Deploy
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.HOST_IP }}
+          username: ${{ secrets.HOST_USER }}
+          password: ${{ secrets.HOST_PASSWORD }}
           script: |
             set -e
-            if [ "$TARGET" = "ghcr" ]; then
-              if [ -n "${GHCR_PULL_TOKEN:-}" ]; then
-                U="${GHCR_PULL_USER:-$GITHUB_REPOSITORY_OWNER}"
-                echo "$GHCR_PULL_TOKEN" | docker login "$REG_HOST" -u "$U" --password-stdin
-              fi
-            else
-              USERNAME=$(echo "${REG_USER:-$GITHUB_ACTOR}" | tr '[:upper:]' '[:lower:]')
-              echo "$DOCKER_REG_TOKEN" | docker login "$REG_HOST" -u "$USERNAME" --password-stdin
-            fi
-            docker pull "$IMAGE"
+            gunzip -c /tmp/mtlab-landing.tar.gz | docker load
+            rm -f /tmp/mtlab-landing.tar.gz
             docker stop mtlab-landing 2>/dev/null || true
             docker rm mtlab-landing 2>/dev/null || true
             docker run -d \
               --name mtlab-landing \
               --restart unless-stopped \
               -p 127.0.0.1:3000:3000 \
-              "$IMAGE"
+              mtlab-landing:latest
