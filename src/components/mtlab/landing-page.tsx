@@ -436,15 +436,15 @@ export function MtlabLandingPage() {
       </div>
 
       <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 pb-24 sm:px-6 lg:px-8 lg:pb-32">
-        <RevealSection id="platform" className="section-shell scroll-mt-28 rounded-[2rem] px-5 py-10 sm:px-8 sm:py-12 lg:px-10 lg:py-14">
-          <div className="relative z-10 space-y-10">
+        <RevealSection id="platform" className="scroll-mt-28 py-4 sm:py-6">
+          <div className="space-y-10">
             <SectionHeader
               kicker="О платформе"
               title="Платформа ПГО"
               description="Собираем данные из четырёх источников, обрабатываем их на собственных мощностях и передаём клиенту в виде готовых продуктов, отчётов или API."
             />
 
-            <div className="grid gap-6 lg:max-w-4xl">
+            <div className="grid gap-6">
               <div className="panel-card p-5 sm:p-6">
                 <div className="mb-5 flex items-center justify-between gap-3">
                   <div>
@@ -454,11 +454,11 @@ export function MtlabLandingPage() {
                   <Satellite className="size-6 text-primary" />
                 </div>
 
-                <div className="grid gap-4 sm:grid-cols-2">
+                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                   {dataSources.map((item) => {
                     const Icon = item.icon;
                     return (
-                      <div key={item.title} className="rounded-[1.25rem] border border-border bg-panel p-4">
+                      <div key={item.title} className="rounded-[1.25rem] border border-border bg-panel p-4 xl:min-h-[13rem]">
                         <div className="mb-4 flex size-11 items-center justify-center rounded-full border border-primary/25 bg-accent text-primary">
                           <Icon className="size-5" />
                         </div>
