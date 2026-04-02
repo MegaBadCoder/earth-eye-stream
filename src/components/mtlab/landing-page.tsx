@@ -472,9 +472,12 @@ export function MtlabLandingPage() {
                 <div className="mb-5 flex items-center justify-between gap-3">
                   <div>
                     <p className="text-sm uppercase tracking-[0.24em] text-primary">Шаг 2</p>
-                    <h3 className="mt-2 font-display text-2xl font-bold text-foreground">Обработка системой обработки информации дистанционного зондирования Земли</h3>
+                    <h3 className="mt-2 font-display text-2xl font-bold text-foreground">Обработка в СОИ ДЗЗ</h3>
+                    <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                      СОИ ДЗЗ — система обработки информации дистанционного зондирования Земли.
+                    </p>
                   </div>
-                  <Cpu className="size-6 text-primary" />
+                  <Cpu className="size-6 shrink-0 text-primary" />
                 </div>
 
                 <div className="space-y-4 text-sm leading-7 text-foreground/88 sm:text-base">
